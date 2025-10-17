@@ -15,6 +15,7 @@ terraform validate            # static checks for configuration correctness
 terraform plan -var-file=terraform.tfvars # preview infrastructure changes
 ```
 - Use `terraform apply` only after a reviewed plan.
+- GitHub Actions workflow `.github/workflows/terraform.yml` runs fmt/init/validate; set repository secret `HCLOUD_TOKEN` to enable the plan stage.
 
 ## Coding Style & Naming Conventions
 - Follow Terraform defaults: two-space indentation, lowercase resource names with underscores.
@@ -37,4 +38,5 @@ terraform plan -var-file=terraform.tfvars # preview infrastructure changes
 ## Security & State Management
 - Store Terraform state remotely (Terraform Cloud or Hetzner storage) for team collaboration; avoid local `.tfstate` in commits.
 - Export `HCLOUD_TOKEN` when running CLI commands; never echo or log the token.
+- Keep the `HCLOUD_TOKEN` GitHub secret scoped to Terraform planning; rotate it whenever tokens are regenerated locally.
 - Rotate API tokens on contributors joining or leaving; revoke unused credentials promptly.
