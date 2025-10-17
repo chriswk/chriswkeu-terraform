@@ -56,7 +56,5 @@ resource "hcloud_load_balancer_target" "control_plane" {
   type             = "label_selector"
   use_private_ip   = true
 
-  label_selector {
-    selector = var.control_plane_label_selector
-  }
+  label_selector = var.control_plane_label_selector
 }
