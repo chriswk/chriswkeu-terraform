@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 - Root Terraform project: all configuration lives at the repository root.
-- `main.tf` wires the `hcloud-talos/talos` module, pinning Kubernetes, Talos, and Cilium versions.
+- `main.tf` wires the `hcloud-talos/talos` module, pinning Kubernetes, Talos, and Cilium versions, and provisions the control-plane load balancer.
 - `variables.tf` and `terraform.tfvars` manage environment-specific inputs; keep tokens out of source control.
 - `outputs.tf` exposes sensitive kubeconfig and talosconfig—treat generated files with care.
 - `versions.tf` locks Terraform (>=1.6.0) and the Hetzner Cloud provider (`~> 1.47`); update deliberately.
@@ -20,6 +20,7 @@ terraform plan -var-file=terraform.tfvars # preview infrastructure changes
 ## Coding Style & Naming Conventions
 - Follow Terraform defaults: two-space indentation, lowercase resource names with underscores.
 - Keep module variables explicit; prefer descriptive names such as `control_plane_count`.
+- Tune load balancer behavior via `load_balancer_type` and `control_plane_label_selector`; document overrides in PRs.
 - Always run `terraform fmt` before reviews to enforce canonical ordering and spacing.
 - Pin provider and module versions in `versions.tf`/`main.tf` to avoid drift.
 
