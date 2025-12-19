@@ -2,16 +2,16 @@ terraform {
   backend "s3" {
     bucket = "chriswkeutfstate"
     endpoints = {
-      s3 ="https://hel1.your-objectstorage.com"
+      s3 = "https://hel1.your-objectstorage.com"
     }
-    key = "chriswkeu.tfstate"
-    region = "main"
+    key                         = "chriswkeu.tfstate"
+    region                      = "main"
     skip_credentials_validation = true
-    skip_metadata_api_check = true
-    skip_region_validation = true
-    skip_requesting_account_id = true
-    use_path_style = true
-    skip_s3_checksum = true
+    skip_metadata_api_check     = true
+    skip_region_validation      = true
+    skip_requesting_account_id  = true
+    use_path_style              = true
+    skip_s3_checksum            = true
   }
 }
 
@@ -28,9 +28,9 @@ module "talos" {
   output_mode_config_cluster_endpoint = "cluster_endpoint"
   enable_floating_ip                  = true
   datacenter_name                     = var.datacenter_name
-  firewall_use_current_ip = true
+  firewall_use_current_ip             = true
 
-  cilium_values = [templatefile("${path.module}/ciliumvalues/values.yaml", {})]
+  cilium_values             = [templatefile("${path.module}/ciliumvalues/values.yaml", {})]
   control_plane_count       = 3
   control_plane_server_type = "cax11"
 
@@ -54,7 +54,7 @@ resource "hcloud_load_balancer" "control_plane" {
 
 resource "hcloud_load_balancer_network" "control_plane" {
   load_balancer_id = hcloud_load_balancer.control_plane.id
-  network_id = module.talos.hetzner_network_id
+  network_id       = module.talos.hetzner_network_id
 }
 
 resource "hcloud_load_balancer_service" "kube_api" {
