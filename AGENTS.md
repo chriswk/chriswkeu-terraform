@@ -31,7 +31,7 @@ terraform plan -var-file=terraform.tfvars # preview infrastructure changes
 - After applying, fetch kubeconfig/talosconfig via `terraform output` and store them securely.
 
 ## Commit & Pull Request Guidelines
-- Current history is empty; adopt imperative, present-tense messages (e.g., `Add worker sizing variables`).
+- Use conventional commit messages (e.g., `feat: add worker sizing variables`).
 - Keep changes focused and reference related issues in the body (`Refs #123`).
 - For PRs, include: purpose summary, plan output snippet, and any follow-up actions or manual steps.
 - Request at least one review for changes impacting core infrastructure or credentials.
