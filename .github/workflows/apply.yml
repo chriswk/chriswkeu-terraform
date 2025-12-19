@@ -1,13 +1,12 @@
 name: Terraform Plan
 on:
-  pull_request:
+  push:
     branches:
       - main
   workflow_dispatch:
 
 permissions:
-  pull-requests: write
-
+  contents: read
 env:
   TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
   HCLOUD_TOKEN_PRESENT: ${{ secrets.HCLOUD_TOKEN != '' }}
