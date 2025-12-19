@@ -1,3 +1,20 @@
+terraform {
+  backend "s3" {
+    bucket = "chriswkeutfstate"
+    endpoints = {
+      s3 ="https://hel1.your-objectstorage.com"
+    }
+    key = "chriswkeu.tfstate"
+    region = "main"
+    skip_credentials_validation = true
+    skip_metadata_api_check = true
+    skip_region_validation = true
+    skip_requesting_account_id = true
+    use_path_style = true
+    skip_s3_checksum = true
+  }
+}
+
 module "talos" {
   source             = "hcloud-talos/talos/hcloud"
   version            = "2.19.1"
