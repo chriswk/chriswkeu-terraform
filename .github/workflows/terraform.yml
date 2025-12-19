@@ -1,42 +1,73 @@
-name: Terraform CI
-
+name: Terraform Plan
 on:
-  push:
+  pull_request:
     branches:
       - main
-  pull_request:
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+
+env:
+  TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
+  HCLOUD_TOKEN_PRESENT: ${{ secrets.HCLOUD_TOKEN != '' }}
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    env:
-      TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
-      HCLOUD_TOKEN_PRESENT: ${{ secrets.HCLOUD_TOKEN != '' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
-
+        uses: actions/checkout@v6
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.13.4
+      - name: Terraform init
+        id: init
+        run: terraform init
 
       - name: Terraform Format
         run: terraform fmt -check
-
-      - name: Terraform Init
-        run: terraform init -input=false
+        id: fmt
 
       - name: Terraform Validate
         run: terraform validate -no-color
+        id: validate
 
       - name: Terraform Plan
         if: env.HCLOUD_TOKEN_PRESENT == 'true'
+        id: plan
         env:
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
         run: terraform plan -input=false -no-color
+        continue-on-error: false
+      - name: Update Pull Request
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization 🤖\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            <details><summary>Show Plan</summary>
 
-      - name: Skip Terraform Plan (Missing HCLOUD_TOKEN)
-        if: env.HCLOUD_TOKEN_PRESENT != 'true'
-        run: |
-          echo "Skipping terraform plan; create repository secret HCLOUD_TOKEN to enable this step."
+            \`\`\`\n
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+      - name: Terraform plan status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
