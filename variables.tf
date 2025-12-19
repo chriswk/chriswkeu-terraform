@@ -18,9 +18,3 @@ variable "load_balancer_type" {
   default     = "lb11"
   description = "Hetzner load balancer type for the control plane ingress."
 }
-
-variable "control_plane_label_selector" {
-  type        = string
-  default     = "controlplane=true"
-  description = "Label selector used to discover control plane servers for the load balancer."
-}
