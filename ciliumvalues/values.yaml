@@ -9,6 +9,8 @@ ipam:
 routingMode: "native"
 ipv4NativeRoutingCIDR: "10.0.16.0/21"
 enableIpv4: true
+gatewayAPI:
+  enabled: true
 ipMasqAgent:
   enabled: false
 kubeProxyReplacement: "true"
