@@ -15,82 +15,83 @@ terraform {
   }
 }
 
+resource "talos_image_factory_schematic" "x86" {
+  schematic = yamlencode({
+    customization = {
+      systemExtensions = {
+        officialExtensions = []
+      }
+    }
+  })
+}
+
+data "talos_image_factory_urls" "hcloud_amd64" {
+  talos_version = "v1.12.3"
+  schematic_id  = talos_image_factory_schematic.x86.id
+  platform      = "hcloud"
+  architecture  = "amd64"
+}
+
+resource "imager_image" "talos_x86" {
+  image_url    = data.talos_image_factory_urls.hcloud_amd64.urls.disk_image
+  architecture = "x86"
+  description  = "Talos Linux v1.12.3 x86 chriswkeu"
+
+  labels = {
+    version = "v1.12.3"
+  }
+}
+
 module "talos" {
   source             = "hcloud-talos/talos/hcloud"
-  version            = "2.19.1"
-  talos_version      = "v1.11.5"
-  kubernetes_version = "1.34.2"
-  cilium_version     = "1.18.4"
+  version            = "3.2.3"
+  talos_version      = "v1.12.3"
+  talos_image_id_x86 = imager_image.talos_x86.id
+  kubernetes_version = "1.35.3"
+  disable_arm        = true
   hcloud_token       = var.hcloud_token
 
-  cluster_name                        = var.cluster_name
-  cluster_api_host                    = "kube.chriswk.eu"
-  output_mode_config_cluster_endpoint = "cluster_endpoint"
-  enable_floating_ip                  = true
-  datacenter_name                     = var.datacenter_name
-  firewall_use_current_ip             = true
+  enable_floating_ip      = true
+  firewall_use_current_ip = true
+  cluster_name            = "chriswkeu"
+  location_name           = "hel1"
+  cilium_values           = [templatefile("${path.module}/ciliumvalues/values.yaml", {})]
+  control_plane_nodes = [
+    { id = 1, type = "cx23" },
+    { id = 2, type = "cx23" },
+    { id = 3, type = "cx23" },
+  ]
 
-  cilium_values             = [templatefile("${path.module}/ciliumvalues/values.yaml", {})]
-  control_plane_count       = 3
-  control_plane_server_type = "cax11"
+  worker_nodes = [
+    { id = 1, type = "cx33" },
+    { id = 2, type = "cx23" },
+  ]
 
-  worker_count       = 3
-  worker_server_type = "cax21"
-}
-
-locals {
-  load_balancer_location = split("-", var.datacenter_name)[0]
-}
-
-resource "hcloud_load_balancer" "control_plane" {
-  name               = "${var.cluster_name}-control-plane"
-  load_balancer_type = var.load_balancer_type
-  location           = local.load_balancer_location
-  labels = {
-    cluster = var.cluster_name
-    role    = "control-plane"
+  kube_api_extra_args = {
+    enable-aggregator-routing = true
   }
-}
 
-resource "hcloud_load_balancer_network" "control_plane" {
-  load_balancer_id = hcloud_load_balancer.control_plane.id
-  network_id       = module.talos.hetzner_network_id
-}
-
-resource "hcloud_load_balancer_service" "kube_api" {
-  load_balancer_id = hcloud_load_balancer.control_plane.id
-  protocol         = "tcp"
-  listen_port      = 6443
-  destination_port = 6443
-
-  health_check {
-    protocol = "tcp"
-    port     = 6443
-    interval = 15
-    retries  = 3
-    timeout  = 5
+  sysctls_extra_args = {
+    # Fix for https://github.com/cloudflare/cloudflared/issues/1176
+    "net.core.rmem_default" = "26214400"
+    "net.core.wmem_default" = "26214400"
+    "net.core.rmem_max"     = "26214400"
+    "net.core.wmem_max"     = "26214400"
   }
-}
 
-resource "hcloud_load_balancer_service" "talos_api" {
-  load_balancer_id = hcloud_load_balancer.control_plane.id
-  protocol         = "tcp"
-  listen_port      = 50000
-  destination_port = 50000
+  kernel_modules_to_load = [
+    { name = "binfmt_misc" } # Required for QEMU in gha-runner-system runners
+  ]
 
-  health_check {
-    protocol = "tcp"
-    port     = 50000
-    interval = 15
-    retries  = 3
-    timeout  = 5
-  }
-}
+  # Cilium bootstrap values - GitOps manages post-bootstrap (ArgoCD in my case)
+  deploy_cilium  = true # set to false after first deployment and let GitOps handle upgrades
+  cilium_version = "1.19.2"
+  # cilium_values  = [templatefile("../path/to/your/git-ops/cilium/values.yaml", {})]
 
-resource "hcloud_load_balancer_target" "control_plane" {
-  load_balancer_id = hcloud_load_balancer.control_plane.id
-  type             = "label_selector"
-  use_private_ip   = true
+  deploy_prometheus_operator_crds  = true # set to false after first deployment and let GitOps handle upgrades
+  prometheus_operator_crds_version = "26.0.0"
 
-  label_selector = "role=control-plane"
+  deploy_hcloud_ccm = true # set to false after first deployment and let GitOps handle upgrades
+
+  disable_talos_coredns = false # set to true after first deployment and let GitOps handle upgrades
 }
