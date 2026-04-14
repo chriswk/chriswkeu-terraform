@@ -24,11 +24,11 @@ terraform {
 }
 
 provider "hcloud" {
-  token = data.onepassword_item.hetzner_token.token
+  token = data.onepassword_item.hetzner_token.password
 }
 
 provider "imager" {
-  token = data.onepassword_item.hetzner_token.token
+  token = data.onepassword_item.hetzner_token.password
 }
 
 provider "talos" {}

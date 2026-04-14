@@ -20,7 +20,3 @@ variable "cluster_name" {
 variable "datacenter_name" {
   type    = string
 }
-
-variable "load_balancer_type" {
-  type        = string
-}

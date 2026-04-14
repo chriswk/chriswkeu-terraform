@@ -60,9 +60,9 @@ resource "imager_image" "talos_x86" {
   }
 }
 
-resource "imager_image" "talos_arm64" {
+resource "imager_image" "talos_arm" {
   image_url = data.talos_image_factory_urls.hcloud_arm64.urls.disk_image
-  architecture = "arm64"
+  architecture = "arm"
   description = "Talos Linux v1.12.3 arm64 chriswkeu"
 
   labels = {
@@ -78,7 +78,7 @@ module "talos" {
   talos_image_id_x86 = imager_image.talos_x86.id
   kubernetes_version = "1.35.3"
   disable_arm        = true
-  hcloud_token       = var.hcloud_token
+  hcloud_token       = data.onepassword_item.hetzner_token.password
 
   enable_floating_ip      = true
   firewall_use_current_ip = true
