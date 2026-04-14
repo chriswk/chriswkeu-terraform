@@ -15,15 +15,29 @@ terraform {
       source  = "siderolabs/talos"
       version = "~> 0.10.0"
     }
+
+    onepassword = {
+      source = "1password/onepassword"
+      version = "~> 3.3.1"
+    }
   }
 }
 
 provider "hcloud" {
-  token = var.hcloud_token
+  token = data.onepassword_item.hetzner_token.token
 }
 
 provider "imager" {
-  token = var.hcloud_token
+  token = data.onepassword_item.hetzner_token.token
 }
 
 provider "talos" {}
+
+provider "onepassword" {
+  service_account_token = var.op_service_account_token
+}
+
+locals {
+  talos_version = "v1.12.3"
+}
+

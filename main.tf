@@ -25,11 +25,28 @@ resource "talos_image_factory_schematic" "x86" {
   })
 }
 
+resource "talos_image_factory_schematic" "arm64" {
+  schematic = yamlencode({
+    customization = {
+      systemExtensions = {
+        officialExtensions = []
+      }
+    }
+  })
+}
+
 data "talos_image_factory_urls" "hcloud_amd64" {
   talos_version = "v1.12.3"
   schematic_id  = talos_image_factory_schematic.x86.id
   platform      = "hcloud"
   architecture  = "amd64"
+}
+
+data "talos_image_factory_urls" "hcloud_arm64" {
+  talos_version = "v1.12.3"
+  schematic_id = talos_image_factory_schematic.arm64.id
+  platform = "hcloud"
+  architecture = "arm64"
 }
 
 resource "imager_image" "talos_x86" {
@@ -39,6 +56,18 @@ resource "imager_image" "talos_x86" {
 
   labels = {
     version = "v1.12.3"
+    architecture = "x86"
+  }
+}
+
+resource "imager_image" "talos_arm64" {
+  image_url = data.talos_image_factory_urls.hcloud_arm64.urls.disk_image
+  architecture = "arm64"
+  description = "Talos Linux v1.12.3 arm64 chriswkeu"
+
+  labels = {
+    version = "v1.12.3"
+    architecture = "arm64"
   }
 }
 
@@ -94,4 +123,10 @@ module "talos" {
   deploy_hcloud_ccm = true # set to false after first deployment and let GitOps handle upgrades
 
   disable_talos_coredns = false # set to true after first deployment and let GitOps handle upgrades
+  network_ipv4_cidr = "10.0.0.0/16"
+  node_ipv4_cidr = "10.0.1.0/24"
+  pod_ipv4_cidr = "10.0.16.0/20"
+  service_ipv4_cidr = "10.0.8.0/21"
+
+
 }

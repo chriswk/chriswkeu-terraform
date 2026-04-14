@@ -23,6 +23,6 @@ override.tf.json
 # Terraform CLI configuration files
 .terraformrc
 terraform.rc
-
+terraform.tfvars
 # Terraform lock file (optional, depends on team preference for consistency vs. local control)
 # .terraform.lock.hcl

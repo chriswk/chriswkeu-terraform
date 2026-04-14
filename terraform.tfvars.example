@@ -1,0 +1,5 @@
+cluster_name    = "chriswk"
+datacenter_name = "fsn1-dc14"
+op_vault_id_terraform = ""
+op_password_uuid_hetzner_token = ""
+op_service_account_token = ""
