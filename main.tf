@@ -76,7 +76,7 @@ module "talos" {
   version            = "3.4.8"
   talos_version      = "v1.13.3"
   talos_image_id_x86 = imager_image.talos_x86.id
-  kubernetes_version = "1.35.3"
+  kubernetes_version = "1.36.1"
   disable_arm        = true
   hcloud_token       = data.onepassword_item.hetzner_token.password
 
