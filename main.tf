@@ -36,14 +36,14 @@ resource "talos_image_factory_schematic" "arm64" {
 }
 
 data "talos_image_factory_urls" "hcloud_amd64" {
-  talos_version = "v1.12.3"
+  talos_version = "v1.13.3"
   schematic_id  = talos_image_factory_schematic.x86.id
   platform      = "hcloud"
   architecture  = "amd64"
 }
 
 data "talos_image_factory_urls" "hcloud_arm64" {
-  talos_version = "v1.12.3"
+  talos_version = "v1.13.3"
   schematic_id = talos_image_factory_schematic.arm64.id
   platform = "hcloud"
   architecture = "arm64"
@@ -52,10 +52,10 @@ data "talos_image_factory_urls" "hcloud_arm64" {
 resource "imager_image" "talos_x86" {
   image_url    = data.talos_image_factory_urls.hcloud_amd64.urls.disk_image
   architecture = "x86"
-  description  = "Talos Linux v1.12.3 x86 chriswkeu"
+  description  = "Talos Linux v1.13.3 x86 chriswkeu"
 
   labels = {
-    version = "v1.12.3"
+    version = "v1.13.3"
     architecture = "x86"
   }
 }
@@ -63,18 +63,18 @@ resource "imager_image" "talos_x86" {
 resource "imager_image" "talos_arm" {
   image_url = data.talos_image_factory_urls.hcloud_arm64.urls.disk_image
   architecture = "arm"
-  description = "Talos Linux v1.12.3 arm64 chriswkeu"
+  description = "Talos Linux v1.13.3 arm64 chriswkeu"
 
   labels = {
-    version = "v1.12.3"
+    version = "v1.13.3"
     architecture = "arm64"
   }
 }
 
 module "talos" {
   source             = "hcloud-talos/talos/hcloud"
-  version            = "3.2.3"
-  talos_version      = "v1.12.3"
+  version            = "3.4.8"
+  talos_version      = "v1.13.3"
   talos_image_id_x86 = imager_image.talos_x86.id
   kubernetes_version = "1.35.3"
   disable_arm        = true
@@ -93,7 +93,7 @@ module "talos" {
 
   worker_nodes = [
     { id = 1, type = "cx33" },
-    { id = 2, type = "cx23" },
+    { id = 2, type = "cx33" },
   ]
 
   kube_api_extra_args = {
@@ -114,7 +114,7 @@ module "talos" {
 
   # Cilium bootstrap values - GitOps manages post-bootstrap (ArgoCD in my case)
   deploy_cilium  = true # set to false after first deployment and let GitOps handle upgrades
-  cilium_version = "1.19.2"
+  cilium_version = "1.19.4"
   # cilium_values  = [templatefile("../path/to/your/git-ops/cilium/values.yaml", {})]
 
   deploy_prometheus_operator_crds  = true # set to false after first deployment and let GitOps handle upgrades
